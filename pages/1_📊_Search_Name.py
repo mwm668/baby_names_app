@@ -7,14 +7,14 @@ from babyname_utils import load_data, get_top_names, display_metrics, display_re
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
-st.set_page_config(page_title="Search Name", page_icon="📊")
-st.sidebar.header("Search Name")
+st.set_page_config(page_title="Name | Baby Names NZ", page_icon="👶")
+st.sidebar.header("Analyse Name")
 
 # Define dataframe
 df = load_data()
 
 # Select gender of name
-gender_select = st.sidebar.radio('',['Female','Male'])
+gender_select = st.sidebar.radio('Select:',['Female','Male'],label_visibility='collapsed')
 gender_select = gender_select.lower()
 
 #########################

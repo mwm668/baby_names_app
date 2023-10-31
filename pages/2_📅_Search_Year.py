@@ -7,15 +7,15 @@ from babyname_utils import load_data, get_top_names, top_names_history
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
-st.set_page_config(page_title="Search Year", page_icon="📅")
-st.sidebar.header("📅 Search Year")
+st.set_page_config(page_title="Year | Baby Names NZ", page_icon="👶")
+st.sidebar.header("Search Year")
 
 # Define dataframe
 # @st.cache_data
 df = load_data()
 
 # Select gender of name
-gender_select = st.sidebar.radio('',['Female','Male'])
+gender_select = st.sidebar.radio('Select:',['Female','Male'],label_visibility='collapsed')
 gender_select = gender_select.lower()
 
 #########################
@@ -67,7 +67,7 @@ max_year = history_df['year'].max()
 history_df['year'] = pd.to_datetime(history_df['year'], format="%Y")
 
 # Create altair chart object
-selection = alt.selection_multi(fields=['name'], bind='legend')
+selection = alt.selection_point(fields=['name'], bind='legend')
 c = alt.Chart(history_df).mark_line(interpolate='basis').encode(
             alt.X('year:T', title='Year', axis=alt.Axis(format="%Y", tickCount='year'), scale=alt.Scale(domain=(min_year-5, max_year))),
             alt.Y('count', title='Count'),
@@ -75,7 +75,7 @@ c = alt.Chart(history_df).mark_line(interpolate='basis').encode(
             alt.Size('size'),
             tooltip=['name','year(year):T','count'],
             opacity=alt.condition(selection, alt.value(1), alt.value(0.2))
-        ).add_selection(selection)
+        ).add_params(selection)
 
 # Add vertical line for selected year
 # rule = alt.Chart(pd.DataFrame({

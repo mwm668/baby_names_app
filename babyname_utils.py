@@ -39,15 +39,11 @@ def display_results(df,baby_name):
                 alt.X('year:T', title='Year', axis=alt.Axis(format="%Y", tickCount='year')),
                 alt.Y('count', title='Count')
             )
-    points = base.mark_circle().encode(
-        opacity=alt.value(0)
-    ).add_params(
-        highlight
-    ).properties(
-        width=600
-    )
+    
+    points = base.mark_circle().encode(opacity=alt.value(0))\
+        .add_params(highlight).properties(width=600)
 
-    lines = base.mark_line().encode(
+    lines = base.mark_line(interpolate='basis').encode(
         size=alt.condition(~highlight, alt.value(1), alt.value(3))
     )
 
@@ -129,19 +125,10 @@ def display_metrics(df,baby_name):
     st.subheader('Interesting facts about {}'.format(baby_name))
     col1a, col2a, col3a = st.columns(3)
     col1a.metric("Most Popular Year",str(highest_year))
-    col2a.metric("Total {}s".format(baby_name),human_format(total_count))
+    col2a.metric("Total {}s".format(baby_name),f'{total_count:,}')
     col3a.metric("Most popular decade",str(top_decade)+"s")
     
     
     col1b, col2b, col3b = st.columns(3)
-    col1b.metric("{0}s in {1}".format(baby_name,highest_year),human_format(highest_year_count))
+    col1b.metric("{0}s in {1}".format(baby_name,highest_year),f'{highest_year_count:,}')
     col3b.markdown("**{0:.0%}** of {1}s were born in the **{2}s**".format(top_prob,baby_name,top_decade))
-
-
-def human_format(num):
-    magnitude = 0
-    while abs(num) >= 10000:
-        magnitude += 1
-        num /= 1000.0
-    # add more suffixes if you need them
-    return '%.0f%s' % (num, ['', 'k', 'M', 'G', 'T', 'P'][magnitude])
