@@ -7,8 +7,8 @@ from babyname_utils import load_data, get_top_names, top_names_history
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
-st.set_page_config(page_title="Analyse Year", page_icon="📅")
-st.sidebar.header("📅 Analyse Year")
+st.set_page_config(page_title="Search Year", page_icon="📅")
+st.sidebar.header("📅 Search Year")
 
 # Define dataframe
 # @st.cache_data
