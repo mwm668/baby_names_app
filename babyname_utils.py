@@ -1,4 +1,5 @@
 import streamlit as st
+import plotly.express as px
 import altair as alt
 import numpy as np
 import pandas as pd
@@ -132,3 +133,95 @@ def display_metrics(df,baby_name):
     col1b, col2b, col3b = st.columns(3)
     col1b.metric("{0}s in {1}".format(baby_name,highest_year),f'{highest_year_count:,}')
     col3b.markdown("**{0:.0%}** of {1}s were born in the **{2}s**".format(top_prob,baby_name,top_decade))
+
+def display_altair_chart_with_highlight(df):
+    # Get min/max for axis
+    min_year = df['year'].min()
+    max_year = df['year'].max()
+
+    # COnvert year to datetime
+    df['year'] = pd.to_datetime(df['year'], format="%Y")
+
+    # Create altair chart object
+    highlight = alt.selection_point(on='mouseover', fields=['name'], nearest=True)
+    base = alt.Chart(df).encode(
+                alt.X('year:T', title='Year', axis=alt.Axis(format="%Y", tickCount='year'), scale=alt.Scale(domain=(min_year-5, max_year))),
+                alt.Y('count', title='Count'),
+                alt.Color('name', title='Name', scale=alt.Scale(scheme='category20')), 
+                tooltip=['name','year(year):T','count']
+            )
+
+    points = base.mark_circle().encode(opacity=alt.value(0))\
+        .add_params(highlight).properties(width=600)
+
+    lines = base.mark_line(interpolate='basis').encode(
+        size=alt.condition(~highlight, alt.value(1), alt.value(3))
+    )
+
+    # Display the chart           
+    st.altair_chart(points + lines, use_container_width=True)
+
+
+def display_altair_chart_with_label(df):
+    # Create a common chart object
+    chart = alt.Chart(df).encode(alt.Color("name").legend(None))
+
+    # Draw the line
+    line = chart.mark_line(interpolate='basis').encode(
+        x="year:T",
+        y="count:Q"
+    )
+
+    # Use the `argmax` aggregate to limit the dataset to the final value
+    label = chart.encode(
+        x='max(year):T',
+        y=alt.Y('count:Q').aggregate(argmax='year'),
+        text='name'
+    )
+
+    # Create a text label
+    text = label.mark_text(align='left', dx=4, fontSize=15, fill='black', filled=False)
+
+    # Create a circle annotation
+    circle = label.mark_circle()
+
+    # Draw the chart with all the layers combined
+    st.altair_chart(line + circle + text, use_container_width=True)
+
+
+def display_altair_bump_chart(df):
+    # Get top 5 names for last 10 years
+    latest_year = df['year'].max().values[0]
+    df = df[df['year']>latest_year-10]
+    df = df[df['']]
+
+
+def display_plotly_chart(df):
+    fig = px.line(
+        df, 
+        x='year',
+        y='count',
+        color='name',
+        line_shape='spline'
+        )
+    
+    for name in df.name.unique():
+        tmp_df = df[df['name']==name]
+        max_year = tmp_df['year'].max()
+        tmp_df = tmp_df[tmp_df['year']==max_year]
+        anno = dict(
+            x=tmp_df['year'],
+            y=tmp_df['count'],
+            text=name,
+            showarrow=True,
+            arrowhead=0,
+            font=dict(color='black'),
+            ax=0,
+            ay=0,
+            bgcolor='white',
+            opacity=1
+            )
+        fig.add_annotation(anno)
+        # st.dataframe(tmp_df)
+    fig.update_layout(showlegend=False)
+    st.plotly_chart(fig, use_container_width=True)

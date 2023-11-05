@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from babyname_utils import load_data, get_top_names, top_names_history
+from babyname_utils import display_altair_chart_with_label, display_altair_chart_with_highlight, display_plotly_chart
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -56,40 +57,8 @@ st.subheader("Number of {0}s born by year".format(baby_name))
 # Get history of top X names and plot
 history_df = top_names_history(df,year_select,gender_select)[['year','name','count']]
 
-# Create size column to highlight top name for current year
-history_df['size'] = np.where(history_df['name']==baby_name, 2, 1)
+display_altair_chart_with_highlight(history_df)
 
-# Get min/max for axis
-min_year = history_df['year'].min()
-max_year = history_df['year'].max()
+display_altair_chart_with_label(history_df)
 
-# COnvert year to datetime
-history_df['year'] = pd.to_datetime(history_df['year'], format="%Y")
-
-# Create altair chart object
-selection = alt.selection_point(fields=['name'], bind='legend')
-c = alt.Chart(history_df).mark_line(interpolate='basis').encode(
-            alt.X('year:T', title='Year', axis=alt.Axis(format="%Y", tickCount='year'), scale=alt.Scale(domain=(min_year-5, max_year))),
-            alt.Y('count', title='Count'),
-            alt.Color('name', title='Name', scale=alt.Scale(scheme='category10')), 
-            alt.Size('size'),
-            tooltip=['name','year(year):T','count'],
-            opacity=alt.condition(selection, alt.value(1), alt.value(0.2))
-        ).add_params(selection)
-
-# Add vertical line for selected year
-# rule = alt.Chart(pd.DataFrame({
-#                 'year': [year_select],
-#                 'color': ['steelblue']
-#             })).mark_rule().encode(
-#                 x='year:T',
-#                 color=alt.Color('color:N', scale=None)
-#             )
-
-# year_text = rule.mark_text(align='center', xOffset = 15, yOffset = 110)\
-#             .encode(text='year(year):T')
-
-
-# Display the chart           
-st.altair_chart(c, use_container_width=True)
-# st.altair_chart(c + rule + year_text, use_container_width=True)
+display_plotly_chart(history_df)
